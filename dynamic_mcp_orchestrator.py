@@ -88,6 +88,7 @@ class DynamicMCPOrchestrator:
         
         # Discovery and capability tracking
         self.discovered_capabilities: Dict[str, List[AgentCapability]] = {}
+        self.capability_cache_timestamp: float = 0.0
         self.agent_performance_history: Dict[str, List[float]] = {}
         
         # Execution state
@@ -115,9 +116,17 @@ class DynamicMCPOrchestrator:
     async def discover_system_capabilities(self) -> Dict[str, List[AgentCapability]]:
         """Dynamically discover all available agents and their capabilities"""
         print(f"\n{Colors.OKCYAN}🔍 DISCOVERING SYSTEM CAPABILITIES{Colors.ENDC}")
-        
+
+        cache_ttl = self.config.dynamic_orchestration.get("capability_discovery_cache", 0)
+        now = time.time()
+
+        # Return cached capabilities if still valid
+        if self.discovered_capabilities and (now - self.capability_cache_timestamp) < cache_ttl:
+            print("   ⚙️  Using cached capabilities")
+            return self.discovered_capabilities
+
         capabilities = {}
-        
+
         # Get all registered agents
         agent_capabilities = self.agent_manager.get_agent_capabilities()
         
@@ -156,6 +165,7 @@ class DynamicMCPOrchestrator:
                 print(f"     • {cap.tool_name}: {task_types_str} (complexity: {cap.complexity_score:.2f})")
         
         self.discovered_capabilities = capabilities
+        self.capability_cache_timestamp = now
         return capabilities
     
     def _infer_task_types(self, tool_name: str, description: str) -> List[TaskType]:
