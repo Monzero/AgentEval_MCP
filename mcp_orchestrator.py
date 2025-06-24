@@ -408,7 +408,7 @@ class MCPAgenticOrchestrator:
         # In a real implementation, this would track actual message timing
         # For now, return a representative value
         return 0.002  # 2ms average latency for in-process A2A messages
-    
+
     async def _get_mcp_metrics(self) -> Dict[str, Any]:
         """Get comprehensive MCP-specific metrics"""
         
@@ -432,17 +432,24 @@ class MCPAgenticOrchestrator:
         # Get agent capabilities overview
         agent_capabilities = self.agent_manager.get_agent_capabilities()
         
+        agent_count = len(self.agent_manager.agents)
+        avg_messages = (
+            len(self.message_bus.message_history) / agent_count
+            if agent_count > 0
+            else 0
+        )
+
         return {
-            "total_agents": len(self.agent_manager.agents),
+            "total_agents": agent_count,
             "total_tools": sum(usage["available_tools"] for usage in tool_usage.values()),
             "tool_usage_by_agent": tool_usage,
             "message_statistics": {
                 "total_messages": len(self.message_bus.message_history),
                 "message_types": message_types,
-                "avg_messages_per_agent": len(self.message_bus.message_history) / len(self.agent_manager.agents)
+                "avg_messages_per_agent": avg_messages,
             },
             "agent_capabilities": agent_capabilities,
-            "protocol_version": "MCP-1.0-A2A-1.0"
+            "protocol_version": "MCP-1.0-A2A-1.0",
         }
     
     def _count_total_tools(self) -> int:
