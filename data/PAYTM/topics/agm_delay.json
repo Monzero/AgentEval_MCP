@@ -1,0 +1,12 @@
+{
+  "topic_name": "AGM Delay",
+  "goal": "Within how many months of the fiscal year end was the last AGM held?",
+  "guidance": "The timeline for the AGM may be computed as:\nT = Date of AGM - FYE\n\nFYE definitions:\n- FYE = 31 March, for companies with a March year-end\n- FYE = 31 Dec, for companies with a Dec year-end\n- FYE = 30 Sep, for companies with a Sep year-end\n- FYE = 30 Jun, for companies with a Jun year-end\n\nThe date of the AGM is to be checked from the shareholder meeting notice or from the AGM outcome documents.",
+  "scoring_rubric": {
+    "0": "More than six months after the fiscal year end",
+    "1": "Within four-six months of the fiscal year end",
+    "2": "Within four months of the fiscal year end"
+  },
+  "company": "PAYTM",
+  "created_date": "2025-06-04T11:08:17.093458"
+}

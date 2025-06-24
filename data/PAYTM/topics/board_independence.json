@@ -1,0 +1,12 @@
+{
+  "topic_name": "Board Independence",
+  "goal": "To assess if the board have directors with permanent board seats",
+  "guidance": "You need to look for the corporate governance report. Find the reappointment date for each board members. If the reppointment date is either not provided or older than 5 years (i.e some date before 2019), then you need to check appointment date. If appointment date is also older than 5 years (i.e before 2019), mark that board member as permanent. Give list of board members and whether or not they are permanent. In other words, either of appointment date or reappointment date should be within last 5 years. For example, if a board member has appoinment date '02-07-2020' and reappointment date is not present, then because the appointment date is within last 5 years  (i.e March 2020 to March 2025 assuming we are checking for annual report as of 31st March 2025) then we would label them as 'Not permanent'. Second example, if any board member has appointment date as 01-01-2012 and reappointment date not present, then we would mark them permanent. Do not present output in table format. Give me text based paragraphs. You are looking at the corporate governance report as of 31st March 2024. Make sure you quote this source in the answer with the page number from which you extract the information",
+  "scoring_rubric": {
+    "0": "if any one of the directors is marked as permanent board members as well as they are not explicitly mentioned to be representatives of lenders.",
+    "1": "if the directors which are marked as permanent board members, but those are representatives of lenders. Remember that usually this case is applicable for financially distressed companies. So unless it is mentioned explicitly that lenders have sent those board members as representative, do not assume so.",
+    "2": "if All directors are marked as non-permanent board members"
+  },
+  "company": "PAYTM",
+  "created_date": "2025-06-04T11:15:23.913243"
+}
