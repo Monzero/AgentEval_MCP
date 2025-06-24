@@ -103,6 +103,8 @@ class A2AMessageBus:
         self.event_subscribers: Dict[str, List[str]] = {}  # event_type -> [agent_ids]
         self.pending_requests: Dict[str, asyncio.Future] = {}
         self.message_history: List[A2AMessage] = []
+        # Track when requests are sent so we can calculate response latency
+        self.request_timestamps: Dict[str, A2AMessage] = {}
         self.running = False
         
     def register_agent(self, agent: 'MCPAgent'):
@@ -135,6 +137,9 @@ class A2AMessageBus:
             params=params,
             correlation_id=correlation_id
         )
+
+        # Track when the request was sent for latency calculations
+        self.request_timestamps[correlation_id] = message
         
         print_a2a_message(from_agent, to_agent, "REQUEST", f"Tool: {tool_name}")
         
@@ -152,9 +157,11 @@ class A2AMessageBus:
             
         except asyncio.TimeoutError:
             self.pending_requests.pop(correlation_id, None)
+            self.request_timestamps.pop(correlation_id, None)
             raise TimeoutError(f"Request to {to_agent}.{tool_name} timed out after {timeout}s")
         except Exception as e:
             self.pending_requests.pop(correlation_id, None)
+            self.request_timestamps.pop(correlation_id, None)
             raise
     
     async def send_response(self, original_message: A2AMessage, result: Any = None, error: str = None):
@@ -223,9 +230,14 @@ class A2AMessageBus:
     
     async def _deliver_message(self, message: A2AMessage):
         """Internal method to deliver message to target agent"""
-        
+
         # Store in message history
         self.message_history.append(message)
+
+        # If this is a response, record when it was received
+        if message.message_type == "response" and message.correlation_id in self.request_timestamps:
+            req_msg = self.request_timestamps.pop(message.correlation_id)
+            req_msg.response_timestamp = datetime.now().isoformat()
         
         # Deliver to target agent
         if message.to_agent in self.agents:

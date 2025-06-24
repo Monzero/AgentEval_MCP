@@ -396,18 +396,40 @@ class MCPAgenticOrchestrator:
         return result
     
     def _calculate_mcp_overhead(self) -> float:
-        """Calculate estimated MCP protocol overhead"""
-        # Simple heuristic: assume 5-10ms overhead per MCP tool call
-        # In practice, this would be measured from actual timing data
-        total_tool_calls = len(self.answers) * 3  # Rough estimate: research + validation + scoring
-        estimated_overhead = total_tool_calls * 0.008  # 8ms average overhead per call
-        return estimated_overhead
+        """Calculate MCP protocol overhead using recorded message timings"""
+        latencies = []
+        for msg in self.message_bus.message_history:
+            if msg.message_type == "request" and hasattr(msg, "response_timestamp"):
+                try:
+                    start = datetime.fromisoformat(msg.timestamp)
+                    end = datetime.fromisoformat(msg.response_timestamp)
+                    latencies.append((end - start).total_seconds())
+                except Exception:
+                    continue
+
+        if not latencies:
+            return 0.0
+
+        # Average overhead per request/response pair
+        return sum(latencies) / len(latencies)
     
     def _calculate_avg_message_latency(self) -> float:
-        """Calculate average A2A message latency"""
-        # In a real implementation, this would track actual message timing
-        # For now, return a representative value
-        return 0.002  # 2ms average latency for in-process A2A messages
+        """Calculate average A2A message latency from history"""
+
+        latencies = []
+        for msg in self.message_bus.message_history:
+            if msg.message_type == "request" and hasattr(msg, "response_timestamp"):
+                try:
+                    start = datetime.fromisoformat(msg.timestamp)
+                    end = datetime.fromisoformat(msg.response_timestamp)
+                    latencies.append((end - start).total_seconds())
+                except Exception:
+                    continue
+
+        if not latencies:
+            return 0.0
+
+        return sum(latencies) / len(latencies)
     
     async def _get_mcp_metrics(self) -> Dict[str, Any]:
         """Get comprehensive MCP-specific metrics"""
